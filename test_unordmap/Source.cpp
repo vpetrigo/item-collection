@@ -4,6 +4,7 @@
 #include <vector>
 #include <iterator>
 #include <sstream>
+#include <fstream>
 
 using namespace std;
 
@@ -19,35 +20,49 @@ struct Item {
     string name;
     int iid;
     double value;
-
-private:
-    string get_name(istream& is);
 };
 
-istream& operator>>(istream& is, Item& i) {
+string get_name(istream& is) {
+    char c;
+    string name;
 
-    if (is.get() == '\"') {
-        string good_name;
-        while (is.get() != '\"') {
+    while (isspace(c = is.get())) {
 
-        }
-        is >> i.name >> i.iid >> i.value;
     }
+
+    if (c == '\"') {
+        while ((c = is.get()) != '\"') {
+            name += c;
+        }
+    }
+
+    return name;
+}
+
+istream& operator>>(istream& is, Item& i) {
+    i.name = get_name(is);
+    is >> i.iid >> i.value;
+
     return is;
 }
 
-string Item::get_name(istream& is) {
-    char c;
+ostream& operator<<(ostream& os, const Item& i) {
+    os << i.iid << ": " << i.name << " - " << i.value << endl;
 
-    while ((c = is.get()) != '\"') {
-        
-    }
-
+    return os;
 }
 
 int main() {
-    istream_iterator<Item> is{cin};
+    string from, to;
+
+    cin >> from >> to;
+
+    ifstream ifs{from};
+    ofstream ofs{to};
+
+    istream_iterator<Item> is{ifs};
     istream_iterator<Item> eos;
+    ostream_iterator<Item> io{ofs};
 
     vector<Item> v{is, eos};
 
@@ -56,6 +71,8 @@ int main() {
             "Item ID: " << i.iid << endl <<
             "Item value: " << i.value << endl;
     }
+
+    copy(v.begin(), v.end(), io);
 
     return 0;
 }
